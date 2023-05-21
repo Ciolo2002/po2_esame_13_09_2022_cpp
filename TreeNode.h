@@ -1,0 +1,8 @@
+//
+// Created by Michael Sarto on 21/05/23.
+//
+
+#ifndef PO2_ESAME_13_09_2022_CPP_TREENODE_H
+#define PO2_ESAME_13_09_2022_CPP_TREENODE_H
+
+#endif //PO2_ESAME_13_09_2022_CPP_TREENODE_H
