@@ -1,152 +1,121 @@
-//
-// Created by Michael Sarto on 21/05/23.
-//
-
-#include "TreeNode.h"
 #include <vector>
 #include <iostream>
 
 using namespace std;
 
+
 template<class T>
 class TreeNode {
 private:
+    TreeNode<T> *left, *right;
     T data;
-    TreeNode<T> *left;
-    TreeNode<T> *right;
     TreeNode<T> *parent;
+    vector<T> tmp;
 
-    static bool equal_aux(const TreeNode<T> *t1, const TreeNode<T> *t2) {
-        return t1 == t2 || (t1 != nullptr && t2 != nullptr && *t1 == *t2);
+
+
+    void dfs() {
+        this->tmp.push_back(data);
+        if (this->left != nullptr) this->dsf(this->left);
+        if (this->right != nullptr) this->dsf(this->right);
     }
 
 public:
+    using iterator = typename vector<T>::iterator;
+    using const_iterator = typename vector<T>::const_iterator;
 
-    TreeNode() = default;
-
-    TreeNode(const TreeNode<T> &t) = default;
-
-    TreeNode<T>(const T &t_, TreeNode<T> *l_, TreeNode<T> *r_) : data(t_), left(l_), right(r_), parent(nullptr) {
-        prepopulate();
-        if (l_ != nullptr) {
-            left->parent = this;
+    TreeNode(T data_, TreeNode *left_, TreeNode *right_) : data(data_), left(left_), right(right_), parent(nullptr) {
+        if (left_ != nullptr) {
+            left_->parent = this;
         }
-        if (r_ != nullptr) {
-            right->parent = this;
+        if (right_ != nullptr) {
+            right_->parent = this;
         }
+        this->dfs();
+    }
+
+    TreeNode() : left(nullptr), right(nullptr), parent(nullptr),tmp(){};
+
+    TreeNode(const TreeNode<T> &x):left(x.left),right(x.right),parent(x.parent),tmp(x.tmp){};
+
+    TreeNode &operator=(const TreeNode<T> &x) {
+        if (*x == this) {
+            return *this;
+        }
+        this->data = x.data;
+        this->left = x.left;
+        this->right = x.right;
+        this->parent = x.parent;
+        this->tmp=x.tmp;
+        return *this;
     }
 
     ~TreeNode() {
         if (left != nullptr) {
             delete left;
-            left = nullptr;
         }
         if (right != nullptr) {
             delete right;
-            right = nullptr;
         }
+        this->left = nullptr;
+        this->right = nullptr;
     }
-
 
     bool operator==(const TreeNode<T> &test) const {
-        return data == test.data && equal_aux(left, test.left) && equal_aux(right, test.right);
+        return tmp==test.tmp;
     }
 
-    using const_iterator = typename std::vector<T>::const_iterator;
-    using iterator = typename std::vector<T>::iterator;
-private:
-    vector<T> children;
-
-    void dfs(vector<T> &v) {
-        v.push_back(data);
-        if (left != nullptr) left->dfs(v);
-        if (right != nullptr) right->dfs(v);
-    }
-
-    void prepopulate() {
-        dfs(children);
-    }
-
-public:
     iterator begin() {
-        return children.begin();
+        return tmp.begin();
     }
 
     const_iterator begin() const {
-        return children.begin();
+        return tmp.cbegin();
     }
 
     iterator end() {
-        return children.end();
+        return tmp.end();
     }
 
     const_iterator end() const {
-        return children.end();
+        return tmp.cend();
+    }
+
+    std::ostream &operator<<(std::ostream& x ){
+        for(T t: tmp ){
+            x<<t<<"    ";
+        }
+        return x;
     }
 
 };
 
-template<class T>
-TreeNode<T> *v(const T t_) {
-    return new TreeNode<T>(t_, nullptr, nullptr);
+
+template <class T>
+TreeNode<T>* v(const T data){
+    return new TreeNode<T>(data, nullptr, nullptr);
+}
+template <class T>
+TreeNode<T>* l(const T data, const TreeNode<T>& left){
+    return new TreeNode<T>(data, left, nullptr);
+}
+template <class T>
+TreeNode<T>* r(const T data, const TreeNode<T>& r){
+    return new TreeNode<T>(data, nullptr, r);
+}
+template <class T>
+TreeNode<T>* lr(const T data, const TreeNode<T>& l,const TreeNode<T>& r){
+    return new TreeNode<T>(data, l, r);
 }
 
-template<class T>
-TreeNode<T> *l(const T t_, TreeNode<T> *l) {
-    return new TreeNode<T>(t_, l, nullptr);
-}
 
-template<class T>
-TreeNode<T> *r(const T t_, TreeNode<T> *r) {
-    return new TreeNode<T>(t_, nullptr, r);
-}
-
-template<class T>
-TreeNode<T>* lr(const T t_, TreeNode<T>* l, TreeNode<T> *r) {
-    return new TreeNode<T>(t_, l, r);
-}
 
 
 int main() {
-    auto t1 = shared_ptr<TreeNode<int>>(
-            lr(1,
-               lr(2,
-                  v(3),
-                  v(4)),
-               r(5,
-                 lr(6,
-                    v(7),
-                    v(8)))));
-    auto t3 = shared_ptr<TreeNode<int>>(
-            lr(1,
-               lr(2,
-                  v(3),
-                  v(4)),
-               r(5,
-                 lr(6,
-                    v(7),
-                    v(8)))));
+    TreeNode<int> t;
 
-    auto t2 =
-    shared_ptr<TreeNode<int>>(
-            lr(1,
-               r(5,					// il sottoalbero destro di t2 è uguale al sinistro di t1 e viceversa
-                 lr(6,
-                    v(7),
-                    v(8))),
-               lr(2,
-                  v(3),
-                  v(4))));
-
-    cout << "equality: " << (*t1 == *t2) << ", " <<  endl;	// dereferenziamo gli operandi sinistro e destro del nostro operator== perchè non accetta pointer ma reference
-
-
-    // test dell'iteratore const
-    cout << "const iterator: ";
-    for (TreeNode<int>::const_iterator it = t1->begin(); it != t1->end(); ++it)	// t1->begin() ritorna un iterator, che viene convertito in un const_iterator dal costruttore
     {
-        const int& n = *it;	// dereferenziando l'iteratore abbiamo accesso const al dato dentro il nodo, quindi non possiamo modificarlo ma solo leggerlo
-        cout << n << " ";
+        TreeNode<int> *x = &t;
     }
-    cout << endl;
+
 }
